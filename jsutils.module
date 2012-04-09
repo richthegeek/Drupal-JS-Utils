@@ -1,0 +1,13 @@
+<?php
+
+function drupal_add_js_dependency($stack, $name = false) {
+	$config = array(
+		'dependencies' => array(
+			$stack => array()
+		)
+	);
+	if ($name) {
+		$config['dependencies'][$stack][] = $name;
+	}
+	drupal_add_js($config, 'setting');
+}

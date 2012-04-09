@@ -1,0 +1,5 @@
+name = JS Utilities
+description = Functional library for handling front-end dependencies
+core = 7.x
+
+scripts[] = jsutils.js
