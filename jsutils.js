@@ -2,20 +2,9 @@
   var Modules;
   Modules = (function() {
     function Modules() {
-      var fns, mod, mods, stack, _i, _len, _ref;
+      var fns, mod, mods;
       this.dependencies = {};
-      if (Drupal.settings.dependencies) {
-        _ref = Drupal.settings.dependencies;
-        for (stack in _ref) {
-          mods = _ref[stack];
-          if (Drupal.settings.dependencies.hasOwnProperty(stack)) {
-            for (_i = 0, _len = mods.length; _i < _len; _i++) {
-              mod = mods[_i];
-              this.add_dependency(stack, mod);
-            }
-          }
-        }
-      }
+      this.init_dependencies();
       if (Drupal.modules) {
         mods = jQuery.extend({}, Drupal.modules);
         for (mod in mods) {
@@ -26,6 +15,28 @@
         }
       }
     }
+    Modules.prototype.init_dependencies = function() {
+      var mod, mods, stack, _ref, _results;
+      if (Drupal.settings.dependencies) {
+        _ref = Drupal.settings.dependencies;
+        _results = [];
+        for (stack in _ref) {
+          mods = _ref[stack];
+          if (Drupal.settings.dependencies.hasOwnProperty(stack)) {
+            _results.push((function() {
+              var _i, _len, _results2;
+              _results2 = [];
+              for (_i = 0, _len = mods.length; _i < _len; _i++) {
+                mod = mods[_i];
+                _results2.push(this.add_dependency(stack, mod));
+              }
+              return _results2;
+            }).call(this));
+          }
+        }
+        return _results;
+      }
+    };
     Modules.prototype.init_dependency = function(stack, fallback) {
       var callback, mod, _base, _i, _len, _ref, _ref2;
       if (fallback == null) {
@@ -57,15 +68,27 @@
       }
       return (_ref2 = (_base2 = this.dependencies[stack])[name]) != null ? _ref2 : _base2[name] = false;
     };
-    Modules.prototype.resolve_dependency = function(name) {
+    Modules.prototype.get_dependants = function(name) {
       var mods, stack, _ref, _results;
       _ref = this.dependencies;
       _results = [];
       for (stack in _ref) {
         mods = _ref[stack];
-        if (this.dependencies.hasOwnProperty(stack)) {
-          _results.push(mods[name] != null ? (mods[name] = true, jQuery(document).trigger(stack + '.update'), this.dependency_status(stack) ? jQuery(document).trigger(stack + '.ready') : void 0) : void 0);
+        if (this.dependencies.hasOwnProperty(stack) && (mods[name] != null)) {
+          _results.push(stack);
         }
+      }
+      return _results;
+    };
+    Modules.prototype.resolve_dependency = function(name) {
+      var stack, _i, _len, _ref, _results;
+      _ref = this.get_dependants(name);
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        stack = _ref[_i];
+        this.dependencies[stack][name] = true;
+        jQuery(document).trigger(stack + '.update');
+        _results.push(this.dependency_status(stack) ? jQuery(document).trigger(stack + '.ready') : void 0);
       }
       return _results;
     };
@@ -143,5 +166,7 @@
     return Modules;
   })();
   Drupal.modules = new Modules();
-  jQuery(function() {});
+  jQuery(function() {
+    return Drupal.modules.init_dependencies();
+  });
 }).call(this);

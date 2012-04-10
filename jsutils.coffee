@@ -2,10 +2,7 @@ class Modules
 
 	constructor: () ->
 		@dependencies = {}
-		if Drupal.settings.dependencies
-			for stack, mods of Drupal.settings.dependencies when Drupal.settings.dependencies.hasOwnProperty(stack)
-				for mod in mods
-					@add_dependency(stack, mod)
+		@init_dependencies()
 		if Drupal.modules
 			mods = jQuery.extend({}, Drupal.modules)
 			@attach(mod, fns) for mod, fns of mods when mods.hasOwnProperty(mod)
@@ -13,6 +10,13 @@ class Modules
 	#######################################################
 	# DEPENDENCY MANAGEMENT
 	#######################################################
+
+	# load all dependencies from settings.
+	init_dependencies: () ->
+		if Drupal.settings.dependencies
+			for stack, mods of Drupal.settings.dependencies when Drupal.settings.dependencies.hasOwnProperty(stack)
+				for mod in mods
+					@add_dependency(stack, mod)
 
 	# Initialise a dependency stack such that it fires
 	# the "ready" event after the page has loaded, even
@@ -34,14 +38,17 @@ class Modules
 	add_dependency: (stack, name) ->
 		@dependencies[stack] ?= {}
 		@dependencies[stack][name] ?= false
+	
+	# list stacks that depend on the named module.
+	get_dependants: (name) ->
+		stack for stack, mods of @dependencies when @dependencies.hasOwnProperty(stack) and mods[name]?
 
-	# Resolve a dependency on all stacks
+	# Resolve a dependency on all stacks.
 	resolve_dependency: (name) ->
-		for stack, mods of @dependencies when @dependencies.hasOwnProperty(stack)
-			if mods[name]?
-				mods[name] = true
-				jQuery(document).trigger(stack + '.update')
-				jQuery(document).trigger(stack + '.ready') if @dependency_status(stack)
+		for stack in @get_dependants(name)
+			@dependencies[stack][name] = true
+			jQuery(document).trigger(stack + '.update')
+			jQuery(document).trigger(stack + '.ready') if @dependency_status(stack)
 
 	# Check the status of a dependency stack
 	dependency_status: (stack) ->
@@ -104,4 +111,5 @@ class Modules
 
 Drupal.modules = new Modules()
 jQuery(() ->
+	Drupal.modules.init_dependencies()
 )
