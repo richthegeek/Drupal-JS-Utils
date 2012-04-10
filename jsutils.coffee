@@ -1,4 +1,5 @@
 class Modules
+
 	constructor: () ->
 		@dependencies = {}
 		if Drupal.settings.dependencies
@@ -19,11 +20,14 @@ class Modules
 	init_dependency: (stack, fallback = true) ->
 		@dependencies[stack] ?= {}
 
+		if Drupal.settings.dependencies[stack]?
+			for mod in Drupal.settings.dependencies[stack]
+				@add_dependency(stack, mod)
+
 		if fallback
 			callback = () ->
 				if Drupal.modules.dependency_status(stack) != true
 					jQuery(document).trigger(stack + '.ready')
-					# alert('ready ' + stack)
 			jQuery(window).load(callback)
 
 	# Add a dependency to a stack.
@@ -57,8 +61,9 @@ class Modules
 	# method in the event that there is a caching implementation
 	# at a later date.
 	attach: (module, fns) ->
-		if not self[module]? or not self.hasOwnProperty(module)
-			self[module] = fns
+
+		if not this[module]? or not this.hasOwnProperty(module)
+			this[module] = fns
 		else
 			console.error('JSUtils - attempt to overwrite a reserved word')
 

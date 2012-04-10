@@ -1,8 +1,6 @@
 (function() {
   var Modules;
-
   Modules = (function() {
-
     function Modules() {
       var fns, mod, mods, stack, _i, _len, _ref;
       this.dependencies = {};
@@ -22,15 +20,27 @@
         mods = jQuery.extend({}, Drupal.modules);
         for (mod in mods) {
           fns = mods[mod];
-          if (mods.hasOwnProperty(mod)) this.attach(mod, fns);
+          if (mods.hasOwnProperty(mod)) {
+            this.attach(mod, fns);
+          }
         }
       }
     }
-
     Modules.prototype.init_dependency = function(stack, fallback) {
-      var callback, _base;
-      if (fallback == null) fallback = true;
-      if ((_base = this.dependencies)[stack] == null) _base[stack] = {};
+      var callback, mod, _base, _i, _len, _ref, _ref2;
+      if (fallback == null) {
+        fallback = true;
+      }
+      if ((_ref = (_base = this.dependencies)[stack]) == null) {
+        _base[stack] = {};
+      }
+      if (Drupal.settings.dependencies[stack] != null) {
+        _ref2 = Drupal.settings.dependencies[stack];
+        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+          mod = _ref2[_i];
+          this.add_dependency(stack, mod);
+        }
+      }
       if (fallback) {
         callback = function() {
           if (Drupal.modules.dependency_status(stack) !== true) {
@@ -40,13 +50,13 @@
         return jQuery(window).load(callback);
       }
     };
-
     Modules.prototype.add_dependency = function(stack, name) {
-      var _base, _base2, _ref;
-      if ((_base = this.dependencies)[stack] == null) _base[stack] = {};
-      return (_ref = (_base2 = this.dependencies[stack])[name]) != null ? _ref : _base2[name] = false;
+      var _base, _base2, _ref, _ref2;
+      if ((_ref = (_base = this.dependencies)[stack]) == null) {
+        _base[stack] = {};
+      }
+      return (_ref2 = (_base2 = this.dependencies[stack])[name]) != null ? _ref2 : _base2[name] = false;
     };
-
     Modules.prototype.resolve_dependency = function(name) {
       var mods, stack, _ref, _results;
       _ref = this.dependencies;
@@ -54,22 +64,11 @@
       for (stack in _ref) {
         mods = _ref[stack];
         if (this.dependencies.hasOwnProperty(stack)) {
-          if (mods[name] != null) {
-            mods[name] = true;
-            jQuery(document).trigger(stack + '.update');
-            if (this.dependency_status(stack)) {
-              _results.push(jQuery(document).trigger(stack + '.ready'));
-            } else {
-              _results.push(void 0);
-            }
-          } else {
-            _results.push(void 0);
-          }
+          _results.push(mods[name] != null ? (mods[name] = true, jQuery(document).trigger(stack + '.update'), this.dependency_status(stack) ? jQuery(document).trigger(stack + '.ready') : void 0) : void 0);
         }
       }
       return _results;
     };
-
     Modules.prototype.dependency_status = function(stack) {
       var count, mod, status, _ref;
       count = 0;
@@ -83,28 +82,31 @@
           }
         }
       }
-      return (count ? true : 1);
+      if (count) {
+        return true;
+      } else {
+        return 1;
+      }
     };
-
     Modules.prototype.attach = function(module, fns) {
-      if (!(self[module] != null) || !self.hasOwnProperty(module)) {
-        return self[module] = fns;
+      if (!(this[module] != null) || !this.hasOwnProperty(module)) {
+        return this[module] = fns;
       } else {
         return console.error('JSUtils - attempt to overwrite a reserved word');
       }
     };
-
     Modules.prototype.implements = function(hook) {
       var fns, module, _ref, _results;
       _ref = Drupal.modules;
       _results = [];
       for (module in _ref) {
         fns = _ref[module];
-        if (fns[hook] != null) _results.push(module);
+        if (fns[hook] != null) {
+          _results.push(module);
+        }
       }
       return _results;
     };
-
     Modules.prototype.invoke = function(module, hook) {
       var args;
       args = Array.prototype.slice.call(arguments, 2);
@@ -112,7 +114,6 @@
         return Drupal.modules[module][hook].call(window, args);
       }
     };
-
     Modules.prototype.invoke_all = function(hook) {
       var args, module, result, result_inner, _i, _len, _ref;
       args = Array.prototype.slice.call(arguments, 1);
@@ -129,7 +130,6 @@
       }
       return result;
     };
-
     Modules.prototype.alter = function(hook, data) {
       var module, _i, _len, _ref;
       hook = hook + '_alter';
@@ -140,13 +140,8 @@
       }
       return data;
     };
-
     return Modules;
-
   })();
-
   Drupal.modules = new Modules();
-
   jQuery(function() {});
-
 }).call(this);
