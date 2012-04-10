@@ -92,7 +92,7 @@ class Modules
 		args = Array::slice.call(arguments, 1)
 		result = []
 		for module in @implements(hook)
-			result_inner = Drupal.modules[module][hook].call(window, args)
+			result_inner = Drupal.modules[module][hook].apply(window, args)
 			if result_inner and result_inner.join?
 				result = jQuery.extend(true, result, result_inner)
 			else if result_inner

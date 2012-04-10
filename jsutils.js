@@ -144,7 +144,7 @@
       _ref = this.implements(hook);
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         module = _ref[_i];
-        result_inner = Drupal.modules[module][hook].call(window, args);
+        result_inner = Drupal.modules[module][hook].apply(window, args);
         if (result_inner && (result_inner.join != null)) {
           result = jQuery.extend(true, result, result_inner);
         } else if (result_inner) {
