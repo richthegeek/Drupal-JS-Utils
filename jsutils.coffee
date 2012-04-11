@@ -17,6 +17,7 @@ class Modules
 			for stack, mods of Drupal.settings.dependencies when Drupal.settings.dependencies.hasOwnProperty(stack)
 				for mod in mods
 					@add_dependency(stack, mod)
+		Drupal.settings.dependencies ?= {}
 
 	# Initialise a dependency stack such that it fires
 	# the "ready" event after the page has loaded, even
@@ -107,7 +108,6 @@ class Modules
 		for module in @implements(hook)
 			data = Drupal.modules[module][hook].call(window, data)
 		return data
-
 
 Drupal.modules = new Modules()
 jQuery(() ->

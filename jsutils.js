@@ -16,26 +16,20 @@
       }
     }
     Modules.prototype.init_dependencies = function() {
-      var mod, mods, stack, _ref, _results;
+      var mod, mods, stack, _base, _i, _len, _ref, _ref2;
       if (Drupal.settings.dependencies) {
         _ref = Drupal.settings.dependencies;
-        _results = [];
         for (stack in _ref) {
           mods = _ref[stack];
           if (Drupal.settings.dependencies.hasOwnProperty(stack)) {
-            _results.push((function() {
-              var _i, _len, _results2;
-              _results2 = [];
-              for (_i = 0, _len = mods.length; _i < _len; _i++) {
-                mod = mods[_i];
-                _results2.push(this.add_dependency(stack, mod));
-              }
-              return _results2;
-            }).call(this));
+            for (_i = 0, _len = mods.length; _i < _len; _i++) {
+              mod = mods[_i];
+              this.add_dependency(stack, mod);
+            }
           }
         }
-        return _results;
       }
+      return (_ref2 = (_base = Drupal.settings).dependencies) != null ? _ref2 : _base.dependencies = {};
     };
     Modules.prototype.init_dependency = function(stack, fallback) {
       var callback, mod, _base, _i, _len, _ref, _ref2;
