@@ -1,21 +1,27 @@
-An attempt to add depedencies and modularity to frontend Drupal code.
+An attempt to add helper functions, depedencies, and modularity to frontend Drupal code.
 
 Adds the following function (backend):
  1. drupal_add_js_dependency(stack, name) - ensures a dependency is in effect before pages load to sidestep race conditions.
 
 Adds the following function sets (frontend):
+
+DEPENDENCIES:
  1. init_dependencies - initialises all dependencies that were present in Drupal.settings on load.
  2. init_dependency - create a dependency stack, optionally making it resolve after page load. May switch to a timeout in future.
  3. add_dependency - adds a dependency to a dependency stack, which must be marked as resolved before the stack marks as resolved.
  4. resolve_dependency - resolves a named dependency on all stacks.
  5. dependency_status - checks the status of a dependency stack
  6. get_dependants - lists stacks that depend on the named module.
- 
+
+HOOK HANDLING:
  7. attach - adds a module to the list of possible hook-implementors
  8. implements - lists modules that implement the named hook
  9. invoke - invokes a hook on a specific module
  10. invoke_all - invokes a hook on all modules that implement it.
  11. alter - invokes a hook_alter on all modules that implement it.
  12. Creates the "Drupal.modules" object with the above methods listed on it.
+
+HELPER FUNCTIONS:
+ 13. Drupal.url(path, options) - an "as close as can be" clone of the Drupal url() function.
 
 This is in use in a real-world situation, although it may function differently to the PHP versions of the same functions due to language differences and mistakes.
