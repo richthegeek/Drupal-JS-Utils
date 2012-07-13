@@ -11,3 +11,11 @@ function drupal_add_js_dependency($stack, $name = false) {
 	}
 	drupal_add_js($config, 'setting');
 }
+
+function jsutils_init() {
+	drupal_add_js(drupal_get_path('module', 'jsutils') . '/jsutils.js');
+	drupal_add_js(array(
+		'absolutePath' => url('/', array('absolute' => TRUE)),
+		'basePathResolved' => url('/')
+	), 'setting');
+}

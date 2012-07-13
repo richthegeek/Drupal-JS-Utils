@@ -112,4 +112,62 @@ class Modules
 Drupal.modules = new Modules()
 jQuery(() ->
 	Drupal.modules.init_dependencies()
+
+	Drupal.url = (path = null, options = {}) ->
+		options.fragment ?= ''
+		options.query ?= {}
+		options.absolute ?= false
+		options.alias ?= false
+		options.prefix ?= ''
+
+		if not options.external?
+			colonpos = path.indexOf(':');
+			options.external = (colonpos >= 0 and !path.substring(0, colonpos).match(/[/?#]/))
+		
+		original_path = path
+
+		[path, options, original_path] = Drupal.modules.alter('url_outbound', [path, options, original_path])
+
+		if options.fragment? and options.fragment != ''
+			options.fragment = '#' + options.fragment
+		
+		options.param_string = jQuery.param(options.query)
+
+		if options.external
+			if path.indexOf('#') >= 0
+				split = path.split('#')
+				path = split.unshift()
+				
+				if split.length and not options.fragment
+					options.fragment = '#' + split.join('#')
+				
+				if options.param_string.length
+					path += (if path.indexOf('?') >= 0 then '&' else '?') + options.param_string
+				
+				if options.https? and options.https
+					path = path.replace('http://', 'https://')
+				else
+					path = path.replace('https://', 'http://')
+			
+			return path = options.fragment
+		
+		if not options.base_url?
+			if options.https?
+				options.base_url = Drupal.settings.absolutePath
+				options.absolute = true
+				if options.https
+					options.base_url = options.base_url.replace('http://', 'https://')
+				else
+					options.base_url = options.base_url.replace('https://', 'http://')
+			else
+				options.base_url = Drupal.settings.basePathResolved
+		
+		if path is '<front>'
+			path = ''
+		# no aliasing or langauge support yet
+
+		base = if options.absolute then options.base_url + '/' else Drupal.settings.basePathResolved
+		prefix = options.prefix.replace(/\/+$/, '')
+
+		return base + prefix + path + (if options.param_string then '?' + options.param_string else '') + options.fragment
 )

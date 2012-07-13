@@ -161,6 +161,77 @@
   })();
   Drupal.modules = new Modules();
   jQuery(function() {
-    return Drupal.modules.init_dependencies();
+    Drupal.modules.init_dependencies();
+    return Drupal.url = function(path, options) {
+      var base, colonpos, original_path, prefix, split, _ref, _ref2, _ref3, _ref4, _ref5, _ref6;
+      if (path == null) {
+        path = null;
+      }
+      if (options == null) {
+        options = {};
+      }
+      if ((_ref = options.fragment) == null) {
+        options.fragment = '';
+      }
+      if ((_ref2 = options.query) == null) {
+        options.query = {};
+      }
+      if ((_ref3 = options.absolute) == null) {
+        options.absolute = false;
+      }
+      if ((_ref4 = options.alias) == null) {
+        options.alias = false;
+      }
+      if ((_ref5 = options.prefix) == null) {
+        options.prefix = '';
+      }
+      if (!(options.external != null)) {
+        colonpos = path.indexOf(':');
+        options.external = colonpos >= 0 && !path.substring(0, colonpos).match(/[/?#]/);
+      }
+      original_path = path;
+      _ref6 = Drupal.modules.alter('url_outbound', [path, options, original_path]), path = _ref6[0], options = _ref6[1], original_path = _ref6[2];
+      if ((options.fragment != null) && options.fragment !== '') {
+        options.fragment = '#' + options.fragment;
+      }
+      options.param_string = jQuery.param(options.query);
+      if (options.external) {
+        if (path.indexOf('#') >= 0) {
+          split = path.split('#');
+          path = split.unshift();
+          if (split.length && !options.fragment) {
+            options.fragment = '#' + split.join('#');
+          }
+          if (options.param_string.length) {
+            path += (path.indexOf('?') >= 0 ? '&' : '?') + options.param_string;
+          }
+          if ((options.https != null) && options.https) {
+            path = path.replace('http://', 'https://');
+          } else {
+            path = path.replace('https://', 'http://');
+          }
+        }
+        return path = options.fragment;
+      }
+      if (!(options.base_url != null)) {
+        if (options.https != null) {
+          options.base_url = Drupal.settings.absolutePath;
+          options.absolute = true;
+          if (options.https) {
+            options.base_url = options.base_url.replace('http://', 'https://');
+          } else {
+            options.base_url = options.base_url.replace('https://', 'http://');
+          }
+        } else {
+          options.base_url = Drupal.settings.basePathResolved;
+        }
+      }
+      if (path === '<front>') {
+        path = '';
+      }
+      base = options.absolute ? options.base_url + '/' : Drupal.settings.basePathResolved;
+      prefix = options.prefix.replace(/\/+$/, '');
+      return base + prefix + path + (options.param_string ? '?' + options.param_string : '') + options.fragment;
+    };
   });
 }).call(this);
